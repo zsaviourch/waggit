@@ -11,19 +11,19 @@ declare namespace AFRAME {
 declare module "aframe-react" {
   interface EntityProps {
     position?: string;
-    "bitcoin-timer"?: { bitcoinValue: string; duration: number };
+    "coin-pulse"?: { value: string; duration: number };
     postprocessing?: string;
   }
 }
 
-AFRAME.registerComponent("bitcoin-timer", {
+AFRAME.registerComponent("coin-pulse", {
   schema: {
-    bitcoinValue: { type: "string", default: "0.00" },
+    value: { type: "string", default: "0.00" },
     duration: { type: "number", default: 300 },
   },
 
   init() {
-    const { bitcoinValue, duration } = this.data;
+    const { value, duration } = this.data;
 
     const outerSphere = document.createElement("a-entity");
     outerSphere.setAttribute("geometry", "primitive: sphere; radius: 2.5;");
@@ -50,14 +50,14 @@ AFRAME.registerComponent("bitcoin-timer", {
     this.innerSphere = innerSphere;
     this.outerSphere = outerSphere;
 
-    const bitcoinText = document.createElement("a-text");
-    bitcoinText.setAttribute("value", `BTC: ${bitcoinValue}`);
-    bitcoinText.setAttribute("color", "#E8C547");
-    bitcoinText.setAttribute("position", "0 -0.2 1");
-    bitcoinText.setAttribute("scale", "2 2 2");
-    bitcoinText.setAttribute("align", "center");
-    bitcoinText.setAttribute("font", "kelsonsans");
-    this.el.appendChild(bitcoinText);
+    const coinText = document.createElement("a-text");
+    coinText.setAttribute("value", `BTC: ${value}`);
+    coinText.setAttribute("color", "#E8C547");
+    coinText.setAttribute("position", "0 -0.2 1");
+    coinText.setAttribute("scale", "2 2 2");
+    coinText.setAttribute("align", "center");
+    coinText.setAttribute("font", "kelsonsans");
+    this.el.appendChild(coinText);
 
     this.startTimer(duration);
   },
@@ -92,20 +92,20 @@ AFRAME.registerComponent("bitcoin-timer", {
   },
 });
 
-type BitcoinTimerProps = {
+type CoinPulseProps = {
   position?: string;
-  bitcoinValue?: string;
+  coinValue?: string;
   duration?: number;
 };
 
-export const BitcoinTimer: React.FC<BitcoinTimerProps> = ({
+export const CoinPulse: React.FC<CoinPulseProps> = ({
   position = "0 0 0",
-  bitcoinValue = "0.00",
+  coinValue = "0.00",
   duration = 300,
 }) => (
   <Entity
     position={position}
-    bitcoin-timer={{ bitcoinValue, duration }}
+    coin-pulse={{ coinValue, duration }}
     postprocessing="bloom: true; bloomThreshold: 0.5; bloomStrength: 3; bloomRadius: 1;"
   />
 );
