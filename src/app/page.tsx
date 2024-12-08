@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React from "react";
 import { Scene, Entity } from "aframe-react";
 import "aframe";
-import { BitcoinTimer } from "./components/bitcoin-timer";
+import { CoinPulse } from "./components/coin-pulse";
+import { Timer } from "./components/timer"; // Make sure the Timer component is imported
 
 const Home = () => {
   return (
@@ -17,8 +18,9 @@ const Home = () => {
           renderer="colorManagement: true"
           vr-mode-ui="enabled: false"
         >
-          {/* Example content in the scene */}
-          <BitcoinTimer position="0 2 -5" bitcoinValue="0.05" duration={600} />
+          <Timer position="top" timerProps={{ duration: 300 }} />{" "}
+          {/* Fixed this line */}
+          <CoinPulse position="0 2 -5" coinValue="0.05" duration={600} />
         </Scene>
       </div>
 
