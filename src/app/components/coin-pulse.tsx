@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Entity } from "aframe-react";
 import "aframe";
+import { fetchBitcoinPrice } from "../api/bitcoin-api";
 
 declare namespace AFRAME {
   let registerComponent: any, utils: any;
@@ -50,16 +51,39 @@ AFRAME.registerComponent("coin-pulse", {
     this.innerSphere = innerSphere;
     this.outerSphere = outerSphere;
 
-    const coinText = document.createElement("a-text");
-    coinText.setAttribute("value", `BTC: ${value}`);
-    coinText.setAttribute("color", "#E8C547");
-    coinText.setAttribute("position", "0 -0.2 1");
-    coinText.setAttribute("scale", "2 2 2");
-    coinText.setAttribute("align", "center");
-    coinText.setAttribute("font", "kelsonsans");
-    this.el.appendChild(coinText);
+    // Create an image of the Bitcoin logo
+    const bitcoinIcon = document.createElement("a-image");
+    bitcoinIcon.setAttribute("src", "/logos/bitcoin-logo.png");
+    bitcoinIcon.setAttribute("position", "0 0 1"); // Position above the text
+
+    // Create an Image object to get the width and height
+    const img = new Image();
+    img.src = "/logos/bitcoin-logo.png";
+    img.onload = () => {
+      const aspectRatio = img.width / img.height; // Calculate the aspect ratio
+      bitcoinIcon.setAttribute("scale", `${aspectRatio} 1 1`); // Scale the logo and adjust aspect ratio
+    };
+
+    this.el.appendChild(bitcoinIcon);
+
+    // Create text for the Bitcoin value
+    this.coinText = document.createElement("a-text");
+    this.coinText.setAttribute("value", `${value}`);
+    this.coinText.setAttribute("color", "#E8C547");
+    this.coinText.setAttribute("position", "0 -0.8 1"); // Position below the logo
+    this.coinText.setAttribute("scale", "2 2 2");
+    this.coinText.setAttribute("align", "center");
+    this.coinText.setAttribute("font", "kelsonsans");
+    this.el.appendChild(this.coinText);
 
     this.startTimer(duration);
+  },
+
+  update() {
+    const { value } = this.data;
+    if (this.coinText) {
+      this.coinText.setAttribute("value", `${value}`);
+    }
   },
 
   startTimer(duration: number) {
@@ -78,7 +102,7 @@ AFRAME.registerComponent("coin-pulse", {
 
   updateOuterSphere(progress: number) {
     const outerSphere = this.outerSphere;
-    const scale = 1 + Math.sin(progress * Math.PI * 2) * 0.5; // Pulsing effect on the outer sphere
+    const scale = 1 + Math.sin(progress * Math.PI * 2) * 0.5;
     outerSphere.setAttribute("scale", `${scale + 1} ${scale + 1} ${scale + 1}`);
 
     const opacity = Math.sin(progress * Math.PI * 2) * 0.5 + 0.5;
@@ -102,10 +126,26 @@ export const CoinPulse: React.FC<CoinPulseProps> = ({
   position = "0 0 0",
   coinValue = "0.00",
   duration = 300,
-}) => (
-  <Entity
-    position={position}
-    coin-pulse={{ coinValue, duration }}
-    postprocessing="bloom: true; bloomThreshold: 0.5; bloomStrength: 3; bloomRadius: 1;"
-  />
-);
+}) => {
+  const [bitcoinPrice, setBitcoinPrice] = useState<string>("0.00");
+
+  useEffect(() => {
+    const getPrice = async () => {
+      const price = await fetchBitcoinPrice();
+      setBitcoinPrice(price.toString()); // Ensure the price is a string
+    };
+
+    getPrice();
+    const interval = setInterval(getPrice, 100000); // Refresh every minute
+
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <Entity
+      position={position}
+      coin-pulse={{ value: bitcoinPrice, duration }}
+      postprocessing="bloom: true; bloomThreshold: 0.5; bloomStrength: 3; bloomRadius: 1;"
+    />
+  );
+};
